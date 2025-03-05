@@ -1,51 +1,53 @@
 import os
-from dotenv import load_dotenv 
+from dotenv import load_dotenv
 import discord
 from discord.ext import commands
 import random
 
-# Lets grab out environment variables from .env file
-load_dotenv("bot_config.env")
+load_dotenv('bot_config.env')  # Load environment variables from .env file
 token = os.getenv("DISCORD_TOKEN")
 bot_name = os.getenv("BOT_NAME")
 
 intents = discord.Intents.default()
-intents.members = True #This is needed to get information about members in voice channels
+intents.members = True  # You need to enable the Members Intent to get information about members in voice channels.
 
 bot = commands.Bot(command_prefix="/", intents=intents)
+
 
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user}')
 
+    try:
+       guild = discord.Object(id=686337802581180494)
+       synced = await bot.tree.sync(guild=guild)
+       print(f"Synced {len(synced)} commands to the guild.")
 
-@bot.command(
-    name="pick",
-    description="Pick a random winner from a voice channel"
-)
+    except Exception as e:
+        print(f"Error syncing commands: {e}")
 
-async def pick_random_user(ctx):
-    # Get the current voice channel of the user.
-    voice_state = ctx.author.voice
-    if not voice_state:
-        await ctx.send("You are not connected to any voice channel")
-        return
-    
-    # Get the voice channel from the voice state
-    voice_channel = voice_state.channel
+GUILD_ID = discord.Object(id=686337802581180494)
 
-    # Get a list of users currently in the voice channel
-    members = voice_channel.members
+@bot.tree.command(name="pick",
+             description="Pick a random user from a voice channel",
+             guild=GUILD_ID)
+async def pick_random_user(interaction: discord.Interaction):
+  user = interaction.user
+  # Get the voice channel that the command user is currently in
+  voice_state = user.voice
+  if not voice_state:
+    await interaction.response.send_message("You are not connected to any voice channel")
+    return
+  channel = voice_state.channel
 
-    # Pick a random user from the list of members
-    winner = random.choice(members)
+  # Get a list of users currently in the voice channel
+  members = channel.members
 
-    # Send a message with the name of the picked user
-    await ctx.send(
-        f"The winner is {winner.mention}! Congratulations!"
-    )
+  # Pick a random user from the list of members
+  random_member = random.choice(members)
+
+  # Send a message with the name of the picked user
+  await interaction.response.send_message(f"The winner is {random_member.mention}! Congratulations!")
 
 
-    bot.run(token)
-    
-    
+bot.run(token)
