@@ -18,19 +18,11 @@ bot = commands.Bot(command_prefix="/", intents=intents)
 async def on_ready():
     print(f'Logged in as {bot.user}')
 
-    try:
-       guild = discord.Object(id=686337802581180494)
-       synced = await bot.tree.sync(guild=guild)
-       print(f"Synced {len(synced)} commands to the guild.")
-
-    except Exception as e:
-        print(f"Error syncing commands: {e}")
-
-GUILD_ID = discord.Object(id=686337802581180494)
+    
 
 @bot.tree.command(name="pick",
              description="Pick a random user from a voice channel",
-             guild=GUILD_ID)
+             )
 async def pick_random_user(interaction: discord.Interaction):
   user = interaction.user
   # Get the voice channel that the command user is currently in
